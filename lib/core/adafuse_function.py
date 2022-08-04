@@ -122,15 +122,15 @@ def run_model(
             train_2d_backbone = False
             run_view_weight = True
 
-            shape_ori = 'input_shape:{},target_shape:{},weight_shape:{}'.format(input_.shape,target_.shape,weight_.shape)
-            logger.info(shape_ori)
+            # shape_ori = 'input_shape:{},target_shape:{},weight_shape:{}'.format(input_.shape,target_.shape,weight_.shape)
+            # logger.info(shape_ori)
 
             input = collate_first_two_dims(input_)
             target = collate_first_two_dims(target_)
             weight = collate_first_two_dims(weight_)
 
-            shape_after = 'input_shape:{},target_shape:{},weight_shape:{}'.format(input.shape,target.shape,weight.shape)
-            logger.info(shape_after)
+            # shape_after = 'input_shape:{},target_shape:{},weight_shape:{}'.format(input.shape,target.shape,weight.shape)
+            # logger.info(shape_after)
 
             meta = dict()
             for kk in meta_:
@@ -277,7 +277,7 @@ def run_model(
                 ###Test the model's performance on a cpu
                 gpu_memory_usage_gb = 0
 
-                
+
                 mpjpe_log_string = ''
                 for k in mpjpe_meters:
                     mpjpe_log_string += '{:.1f}|'.format(mpjpe_meters[k].avg)

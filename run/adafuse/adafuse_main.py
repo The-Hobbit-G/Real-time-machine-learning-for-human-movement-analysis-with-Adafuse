@@ -146,17 +146,21 @@ def main():
     # Note this backbone is already trained on current dataset
     pretrained_backbone_file = Path(config.DATA_DIR) / config.NETWORK.PRETRAINED
     if os.path.exists(pretrained_backbone_file):
-        model.load_state_dict(torch.load(pretrained_backbone_file), strict=False)
+        # model.load_state_dict(torch.load(pretrained_backbone_file), strict=False)
+        ####Test model in cpu
+        model.load_state_dict(torch.load(pretrained_backbone_file,map_location=torch.device('cpu')), strict=False)
 
     if args.evaluate:
         run_phase = 'test'
         model_file_path = config.NETWORK.ADAFUSE
-        model.load_state_dict(torch.load(model_file_path), strict=True)
+        # model.load_state_dict(torch.load(model_file_path), strict=True)
+        model.load_state_dict(torch.load(model_file_path,map_location=torch.device('cpu')), strict=True)
         logger.info('=> loading model from {} for evaluating'.format(model_file_path))
     elif run_phase == 'test':
         model_state_file = os.path.join(final_output_dir, model_file)
         logger.info('=> loading model from {}'.format(model_state_file))
-        model.load_state_dict(torch.load(model_state_file), strict=False)
+        # model.load_state_dict(torch.load(model_state_file), strict=False)
+        model.load_state_dict(torch.load(model_state_file,map_location=torch.device('cpu')), strict=False)
 
     gpus = [int(i) for i in config.GPUS.split(',')]
 
