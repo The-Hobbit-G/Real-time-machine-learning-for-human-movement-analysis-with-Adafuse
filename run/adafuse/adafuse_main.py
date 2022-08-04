@@ -159,11 +159,18 @@ def main():
         model.load_state_dict(torch.load(model_state_file), strict=False)
 
     gpus = [int(i) for i in config.GPUS.split(',')]
+
+    '''
     model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
 
-    criterion = JointsMSELoss(
-        use_target_weight=config.LOSS.USE_TARGET_WEIGHT).cuda()
+    criterion = JointsMSELoss(use_target_weight=config.LOSS.USE_TARGET_WEIGHT).cuda()
     criterion_mpjpe = JointMPJPELoss().cuda()
+    '''
+    ###Test the model's performance on a cpu
+    model = torch.nn.DataParallel(model, device_ids=gpus)
+    criterion = JointsMSELoss(use_target_weight=config.LOSS.USE_TARGET_WEIGHT)
+    criterion_mpjpe = JointMPJPELoss()
+
 
     view_weight_params = []
     for name, param in model.named_parameters():
