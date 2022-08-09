@@ -29,25 +29,30 @@ class MultiViewPose(nn.Module):
     def __init__(self, PoseResNet, CFG):
         super(MultiViewPose, self).__init__()
         self.config = CFG
+        # general joint mapping gives the order for all 20 joints in general cases. 
+        # But in each dataset, there could be less than 20 joints, so we have reverse joint mapping 
+        # where the key is the order of the joint in this specific dataset, and the value is the order of this joint in the general case.
         general_joint_mapping = get_joint_mapping(self.config.DATASET.TRAIN_DATASET)
         reverse_joint_mapping = {general_joint_mapping[k]: k for k in range(20) if general_joint_mapping[k]!='*'}
         self.joint_mapping = []
+        #针对每个dataset, 将其独有的reverse joint mapping进行排序后将value值(即每个joint在general case下对应的序号)存到一个list中
         for k in sorted(reverse_joint_mapping.keys()):
             self.joint_mapping.append(reverse_joint_mapping[k])
         self.joint_mapping = torch.as_tensor(self.joint_mapping)
 
         self.resnet = PoseResNet
-        self.b_crossview_fusion = self.config.CAM_FUSION.CROSSVIEW_FUSION
-        self.b_ransac = True
+        self.b_crossview_fusion = self.config.CAM_FUSION.CROSSVIEW_FUSION #flag for using crossview fusion or not, true by default
+        self.b_ransac = True #flag for doing ransac to the 3D estimation result(setting to false would increase the speed!!!)
 
+        #h,w as heapmap size, could be set in each config file(yaml). Different dataset could use different heatmap size
         h = int(self.config.NETWORK.HEATMAP_SIZE[0])
         w = int(self.config.NETWORK.HEATMAP_SIZE[1])
         hm_sigma = self.config.NETWORK.SIGMA
         self.h = h
         self.w = w
-        self.njoints = self.config.DATASET.NUM_USED_JOINTS
-        self.nheatmaps = self.config.NETWORK.NUM_JOINTS
-        self.nview = len(self.config.MULTI_CAMS.SELECTED_CAMS)
+        self.njoints = self.config.DATASET.NUM_USED_JOINTS #Used joints should be the same number as reverse joint mapping
+        self.nheatmaps = self.config.NETWORK.NUM_JOINTS #each joint would need a heatmap, so 20 joints in general case would require 20 heatmaps as shown in cofig files
+        self.nview = len(self.config.MULTI_CAMS.SELECTED_CAMS) #how many views we will use to fuse
         self.cam_fusion_net = CamFusionModule(self.nview, self.njoints, self.h, self.w, general_joint_mapping, self.config)
         self.smax = SoftArgmax2D(window_fn='Uniform', window_width=5*hm_sigma, softmax_temp=0.05)
         self.view_weight_net = ViewWeightNet(self.config, self.nview)

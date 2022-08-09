@@ -81,8 +81,8 @@ class MultiViewPose(nn.Module):
         if isinstance(views, list):
             nviews = len(views)
             all_views_input = torch.cat(views, dim=0)
-            all_views_heatmaps, _ = self.resnet(all_views_input)
-            single_views = torch.chunk(all_views_heatmaps, chunks=nviews, dim=0)
+            all_views_heatmaps, _ = self.resnet(all_views_input) #将所有views的输入图像按第0维叠加(合成一个batch)送入pose_resnet
+            single_views = torch.chunk(all_views_heatmaps, chunks=nviews, dim=0) #torch.chunk将tensor all_views_heatmaps按照第0列切分
             multi_views = []
             return single_views, multi_views
         else:

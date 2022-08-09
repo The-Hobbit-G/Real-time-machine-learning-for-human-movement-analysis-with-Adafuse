@@ -134,7 +134,7 @@ def main():
     backbone_model = eval('models.' + config.BACKBONE_MODEL + '.get_pose_net')(
         config, is_train=True)
     model = models.adafuse_network.get_multiview_pose_net(
-        backbone_model, config)
+        backbone_model, config)#see adafuse_network.py line 318-320
 
     writer_dict = {
         'writer': SummaryWriter(tb_log_dir),
@@ -146,14 +146,17 @@ def main():
     # Note this backbone is already trained on current dataset
     pretrained_backbone_file = Path(config.DATA_DIR) / config.NETWORK.PRETRAINED
     if os.path.exists(pretrained_backbone_file):
+        #load pretrained backbone when there is one no matter train/evaluate phase.
         model.load_state_dict(torch.load(pretrained_backbone_file), strict=False)
 
     if args.evaluate:
+        #when args give evaluate, set the run_phase to test mode and load the adafuse pretrained model
         run_phase = 'test'
         model_file_path = config.NETWORK.ADAFUSE
         model.load_state_dict(torch.load(model_file_path), strict=True)
         logger.info('=> loading model from {} for evaluating'.format(model_file_path))
     elif run_phase == 'test':
+        #when it's not in evaluate but in test mode, load the final output model state dict.
         model_state_file = os.path.join(final_output_dir, model_file)
         logger.info('=> loading model from {}'.format(model_state_file))
         model.load_state_dict(torch.load(model_state_file), strict=False)
