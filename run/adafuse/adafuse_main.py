@@ -143,7 +143,8 @@ def main():
     }
 
     # load pretrained backbone
-    # Note this backbone is already trained on current dataset
+    # Note this backbone is already trained on current dataset  
+    ##Some notes
     pretrained_backbone_file = Path(config.DATA_DIR) / config.NETWORK.PRETRAINED
     if os.path.exists(pretrained_backbone_file):
         #load pretrained backbone when there is one no matter train/evaluate phase.
