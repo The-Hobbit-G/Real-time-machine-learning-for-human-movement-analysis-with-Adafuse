@@ -146,17 +146,9 @@ def run_model(
             origin_hms = extra['origin_hms']
             fused_hms_smax = extra['fused_hms_smax']
 
-            '''
             target_cuda = target.cuda(non_blocking=True)
             weight_cuda = weight.cuda(non_blocking=True)
             pose3d_gt = meta_['joints_gt'][:,0,:,:].contiguous().cuda(non_blocking=True)  # (batch, njoint, 3)
-            '''
-            ###Test the model's performance on a cpu
-            target_cuda = target
-            weight_cuda = weight
-            pose3d_gt = meta_['joints_gt'][:,0,:,:].contiguous()  # (batch, njoint, 3)
-
-
             num_total_joints = batch * n_used_joints
             # --- --- forward end here
 
@@ -216,11 +208,7 @@ def run_model(
             nviews_vis = extra['nviews_vis']
             all_nview_vis_gt[i*batch:(i+1)*batch] = nviews_vis.view(batch, n_used_joints).detach().cpu().numpy().astype(np.int)
 
-            # joints_vis_3d = torch.as_tensor(nviews_vis >= 2, dtype=torch.float32).cuda()
-            ###Test the model's performance on a cpu
-            joints_vis_3d = torch.as_tensor(nviews_vis >= 2, dtype=torch.float32)
-
-
+            joints_vis_3d = torch.as_tensor(nviews_vis >= 2, dtype=torch.float32).cuda()
             for k in j3d_keys:
                 preds = extra[k]
                 if config.DATASET.TRAIN_DATASET in ['multiview_h36m']:
@@ -270,14 +258,8 @@ def run_model(
 
             # ---- print logs
             if i % config.PRINT_FREQ == 0 or i == len(loader)-1 or debug_bit:
-                '''
                 gpu_memory_usage = torch.cuda.max_memory_allocated(0)  # bytes
                 gpu_memory_usage_gb = gpu_memory_usage / 1.074e9
-                '''
-                ###Test the model's performance on a cpu
-                gpu_memory_usage_gb = 0
-
-
                 mpjpe_log_string = ''
                 for k in mpjpe_meters:
                     mpjpe_log_string += '{:.1f}|'.format(mpjpe_meters[k].avg)
