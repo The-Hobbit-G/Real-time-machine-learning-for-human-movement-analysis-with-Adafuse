@@ -143,30 +143,39 @@ def main():
     }
 
     # load pretrained backbone
-    # Note this backbone is already trained on current dataset
+    # Note this backbone is already trained on current dataset  
+    ##Some notes
     pretrained_backbone_file = Path(config.DATA_DIR) / config.NETWORK.PRETRAINED
     if os.path.exists(pretrained_backbone_file):
-        #load pretrained backbone when there is one no matter train/evaluate phase.
         model.load_state_dict(torch.load(pretrained_backbone_file), strict=False)
 
     if args.evaluate:
         #when args give evaluate, set the run_phase to test mode and load the adafuse pretrained model
         run_phase = 'test'
         model_file_path = config.NETWORK.ADAFUSE
-        model.load_state_dict(torch.load(model_file_path), strict=True)
+        # model.load_state_dict(torch.load(model_file_path), strict=True)
+        model.load_state_dict(torch.load(model_file_path,map_location=torch.device('cpu')), strict=True)
         logger.info('=> loading model from {} for evaluating'.format(model_file_path))
     elif run_phase == 'test':
         #when it's not in evaluate but in test mode, load the final output model state dict.
         model_state_file = os.path.join(final_output_dir, model_file)
         logger.info('=> loading model from {}'.format(model_state_file))
-        model.load_state_dict(torch.load(model_state_file), strict=False)
+        # model.load_state_dict(torch.load(model_state_file), strict=False)
+        model.load_state_dict(torch.load(model_state_file,map_location=torch.device('cpu')), strict=False)
 
     gpus = [int(i) for i in config.GPUS.split(',')]
+
+    '''
     model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
 
-    criterion = JointsMSELoss(
-        use_target_weight=config.LOSS.USE_TARGET_WEIGHT).cuda()
+    criterion = JointsMSELoss(use_target_weight=config.LOSS.USE_TARGET_WEIGHT).cuda()
     criterion_mpjpe = JointMPJPELoss().cuda()
+    '''
+    ###Test the model's performance on a cpu
+    model = torch.nn.DataParallel(model, device_ids=gpus)
+    criterion = JointsMSELoss(use_target_weight=config.LOSS.USE_TARGET_WEIGHT)
+    criterion_mpjpe = JointMPJPELoss()
+
 
     view_weight_params = []
     for name, param in model.named_parameters():
