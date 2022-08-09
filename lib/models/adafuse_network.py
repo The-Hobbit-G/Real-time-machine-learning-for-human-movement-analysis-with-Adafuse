@@ -56,6 +56,7 @@ class MultiViewPose(nn.Module):
         self.cam_fusion_net = CamFusionModule(self.nview, self.njoints, self.h, self.w, general_joint_mapping, self.config)
         self.smax = SoftArgmax2D(window_fn='Uniform', window_width=5*hm_sigma, softmax_temp=0.05)
         self.view_weight_net = ViewWeightNet(self.config, self.nview)
+        #some more comments
 
         self.smooth2dloss = Joint2dSmoothLoss()
 
