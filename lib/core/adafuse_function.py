@@ -124,9 +124,9 @@ def run_model(
 
             # shape_ori = 'input_shape:{},target_shape:{},weight_shape:{}'.format(input_.shape,target_.shape,weight_.shape)
             # logger.info(shape_ori)
-            ###shape of input_:[1,8,3,256,256](1*batch*channel*h_image*w_image)
-            ###shape of target_:[1,8,20,64,64](1*batch*num_of_joints*h_heatmap*w_heatmap)
-            ###shape of weight_:[1,8,20,1](1*batch*num_of_joints*1)
+            ###shape of input_:[1,8,3,256,256](1(batch)*num_of_views*channel*h_image*w_image)
+            ###shape of target_:[1,8,20,64,64](1(batch)*num_of_views*num_of_joints*h_heatmap*w_heatmap)
+            ###shape of weight_:[1,8,20,1](1(batch)*num_of_views*num_of_joints*1)
 
             input = collate_first_two_dims(input_)
             target = collate_first_two_dims(target_)
@@ -134,9 +134,9 @@ def run_model(
 
             # shape_after = 'input_shape:{},target_shape:{},weight_shape:{}'.format(input.shape,target.shape,weight.shape)
             # logger.info(shape_after)
-            ###shape of input:[8,3,256,256](batch*channel*h_image*w_image)
-            ###shape of target:[8,20,64,64](batch*num_of_joints*h_heatmap*w_heatmap)
-            ###shape of weight:[8,20,1](batch*num_of_joints*1)
+            ###shape of input:[8,3,256,256](num_of_views*channel*h_image*w_image)
+            ###shape of target:[8,20,64,64](num_of_views*num_of_joints*h_heatmap*w_heatmap)
+            ###shape of weight:[8,20,1](num_of_views*num_of_joints*1)
 
             meta = dict()
             for kk in meta_:
