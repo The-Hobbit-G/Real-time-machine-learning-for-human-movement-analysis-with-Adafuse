@@ -66,9 +66,10 @@ class MultiViewPose(nn.Module):
         run_phase = kwargs['run_phase']
         do_ransac = self.b_ransac and (run_phase == 'test')  # do not ransac when train, it is slow
 
-        batch = inputs.shape[0]
+        batch = inputs.shape[0] #shape of inputs: batch*num_of_views*channel*h_image*w_image
         nview = inputs.shape[1]
-        inputs = inputs.view(batch*nview, *inputs.shape[2:])
+        inputs = inputs.view(batch*nview, *inputs.shape[2:]) #shape of inputs: (batch*num_of_views) *channel*h_image*w_image
+        #*inputs.shape[2:] means pass the shape of inputs.shape[2:] to the current inputs,即将原inputs.shape从第2维往后的维度不做改变直接保留下来
         njoints = len(self.joint_mapping)
         origin_hms, feature_before_final = self.resnet(inputs)
         # if not run_view_weight:  # todo, action not clear; does not need view weight

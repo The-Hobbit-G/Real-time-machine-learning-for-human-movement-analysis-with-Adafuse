@@ -207,9 +207,9 @@ class PoseResNet(nn.Module):
 
     def init_weights(self, pretrained=''):
         if os.path.isfile(pretrained):
-            # pretrained_state_dict = torch.load(pretrained)
+            pretrained_state_dict = torch.load(pretrained)
             ####Test model on cpu
-            pretrained_state_dict = torch.load(pretrained,map_location=torch.device('cpu'))
+            # pretrained_state_dict = torch.load(pretrained,map_location=torch.device('cpu'))
 
 
             logger.info('=> loading pretrained model {}'.format(pretrained))
