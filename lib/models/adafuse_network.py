@@ -86,8 +86,9 @@ class MultiViewPose(nn.Module):
         pmat = torch.bmm(self.collate_first_two_dims(cam_Intri),
                          self.collate_first_two_dims(torch.cat((cam_R, standard_cam_T), dim=3)))
         # # Notice: T is not h36m t, should be standard t
-        pmat = pmat.view(batch, nview, 3, 4)
-        fund_mats2 = self.get_fund_mat_pairs(cam_R, cam_T, cam_Intri)  # (batch, nview, nview, 3, 3)
+        pmat = pmat.view(batch, nview, 3, 4) ##Projection matrix is composed of intrinsic camera matrix and outtrinsic camera matrix(rotation and translation)
+        fund_mats2 = self.get_fund_mat_pairs(cam_R, cam_T, cam_Intri)  # (batch, nview, nview, 3, 3)  
+        #fundamental matrix which can bederived from projection matrix(cam_Intri, cam_R,cam_T)
 
         # camera in (batch*nview, ...)
         cam_R_collate = self.collate_first_two_dims(cam_R)
@@ -98,7 +99,7 @@ class MultiViewPose(nn.Module):
 
         # joint ground truth
         joint_vis = kwargs['joint_vis']  # ()
-        gt_3d = kwargs['joints_gt'].to(dev)  # (batch, nview, njoints, 3)
+        gt_3d = kwargs['joints_gt'].to(dev)  # (batch, nview, njoints, 3) 3D ground-truth joint location (x, y, z) in global frame
         gt_3d = self.collate_first_two_dims(gt_3d)
         gt_3d = gt_3d.permute(0, 2, 1)  # (batch*nview, 3, njoints)
         gt_2d_cam = torch.bmm(cam_R_collate, (gt_3d - cam_T_collate))

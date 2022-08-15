@@ -135,6 +135,9 @@ class JointsDataset(Dataset):
 
         joints = db_rec['joints_2d'].copy()
         joints_vis = db_rec['joints_vis'].copy()
+        #'joints_2d': ndarray (15,2) | 2D ground-truth joint location (x, y) in image frame
+        #'joints_vis': ndarray (15,1) | indicating if the joint is within the image boundary
+        #'joints_vis_2d': ndarray (15,1) | indicating if the joint is within the image boundary and not occluded
 
         center = np.array(db_rec['center']).copy()
         scale = np.array(db_rec['scale']).copy()
@@ -243,7 +246,7 @@ class JointsDataset(Dataset):
             x = np.arange(0, size, 1, np.float32)
             y = x[:, np.newaxis]
             x0 = y0 = size // 2
-            g = np.exp(-((x - x0)**2 + (y - y0)**2) / (2 * self.sigma**2))
+            g = np.exp(-((x - x0)**2 + (y - y0)**2) / (2 * self.sigma**2)) ##The gaussian fuction that centered at the gd location
 
             g_x = max(0, -ul[0]), min(br[0], self.heatmap_size[0]) - ul[0]
             g_y = max(0, -ul[1]), min(br[1], self.heatmap_size[1]) - ul[1]
@@ -253,6 +256,6 @@ class JointsDataset(Dataset):
             v = target_weight[joint_id]
             if v > 0.5:
                 target[joint_id][img_y[0]:img_y[1], img_x[0]:img_x[1]] = \
-                    g[g_y[0]:g_y[1], g_x[0]:g_x[1]]
+                    g[g_y[0]:g_y[1], g_x[0]:g_x[1]]  ###y-vertical,  x-horizontal
 
         return target, target_weight

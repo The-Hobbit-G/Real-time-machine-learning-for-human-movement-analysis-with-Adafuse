@@ -201,7 +201,7 @@ class PoseResNet(nn.Module):
 
         x = self.deconv_layers(x)
         x_final_feature = x
-        x = self.final_layer(x)
+        x = self.final_layer(x)# final layer is composed of only 1*1 convolutional kernel cores
 
         return x, x_final_feature
 

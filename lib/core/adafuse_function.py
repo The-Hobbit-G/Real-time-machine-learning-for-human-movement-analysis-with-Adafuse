@@ -129,7 +129,9 @@ def run_model(
             ###shape of weight_:[1,8,20,1](1(batch)*num_of_views*num_of_joints*1)
 
             input = collate_first_two_dims(input_)
-            target = collate_first_two_dims(target_)
+            target = collate_first_two_dims(target_) 
+            #target -- a heat map with a gaussian fucntion centered at the gt location and other pixels set to zero
+            #(相当于在gt的位置加了一个高斯滤波，只有gt附近才有非0值，gt处值最大)
             weight = collate_first_two_dims(weight_)
 
             # shape_after = 'input_shape:{},target_shape:{},weight_shape:{}'.format(input.shape,target.shape,weight.shape)
