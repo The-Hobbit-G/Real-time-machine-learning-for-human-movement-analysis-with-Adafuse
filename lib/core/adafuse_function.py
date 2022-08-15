@@ -194,10 +194,11 @@ def run_model(
                     detail_preds2d[k] = list()
             if detail_weights is None:
                 detail_weights = dict()
-                detail_weights['maxv'] = list()
+                # detail_weights['maxv'] = list()
                 detail_weights['learn'] = list()
 
             # save all weights
+            '''
             maxvs = extra['maxv']  # batch njoint, nview
             for b in range(batch):
                 maxvs_tmp = []
@@ -205,6 +206,7 @@ def run_model(
                     maxv_str = ''.join(['{:.2f}, '.format(v) for v in maxvs[b, j]])
                     maxvs_tmp.append(maxv_str)
                 all_maxvs.append(maxvs_tmp)
+            '''
             view_weight = extra['pred_view_weight']
             for b in range(batch):
                 maxvs_tmp = []
@@ -234,8 +236,10 @@ def run_model(
                 p2d = p2d.detach().cpu().numpy()
                 detail_preds2d[k].extend(p2d)
 
-            maxv_weight = extra['maxv'].detach().cpu().numpy()
-            detail_weights['maxv'].extend(maxv_weight)
+            # maxv_weight = extra['maxv'].detach().cpu().numpy()
+            # detail_weights['maxv'].extend(maxv_weight)
+
+
             learn_weight = extra['pred_view_weight'].detach().cpu().numpy()
             detail_weights['learn'].extend(learn_weight)
 

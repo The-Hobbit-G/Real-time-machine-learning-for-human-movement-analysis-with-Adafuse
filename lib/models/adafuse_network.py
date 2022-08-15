@@ -42,7 +42,10 @@ class MultiViewPose(nn.Module):
 
         self.resnet = PoseResNet
         self.b_crossview_fusion = self.config.CAM_FUSION.CROSSVIEW_FUSION #flag for using crossview fusion or not, true by default
-        self.b_ransac = True #flag for doing ransac to the 3D estimation result(setting to false would increase the speed!!!)
+        
+        #change RANSAC to False to save time
+        self.b_ransac = False
+        # self.b_ransac = True #flag for doing ransac to the 3D estimation result(setting to false would increase the speed!!!)
 
         #h,w as heapmap size, could be set in each config file(yaml). Different dataset could use different heatmap size
         h = int(self.config.NETWORK.HEATMAP_SIZE[0])
@@ -121,9 +124,11 @@ class MultiViewPose(nn.Module):
         xview_self_hm_added = torch.mean(xview_self_hm, dim=1)
         xview_self_hm_added = (xview_self_hm_added + origin_hms)/2.0  # crossview fusion with heuristic weights
         xview_self_hm_added = torch.index_select(xview_self_hm_added, dim=1, index=self.joint_mapping.to(dev))
-        joint_heuristic, joint_heuristic_maxv = self.smax(xview_self_hm_added.detach())
-        joint_heuristic_image = heatmap_coords_to_image(joint_heuristic, inv_affine_trans)
-        joint_heuristic_image = joint_heuristic_image.view(batch, nview, 3, njoints)
+
+
+        # joint_heuristic, joint_heuristic_maxv = self.smax(xview_self_hm_added.detach())
+        # joint_heuristic_image = heatmap_coords_to_image(joint_heuristic, inv_affine_trans)
+        # joint_heuristic_image = joint_heuristic_image.view(batch, nview, 3, njoints)
         # --- End --- heatmap warp network
 
         # --- --- view weight network forward
@@ -194,6 +199,8 @@ class MultiViewPose(nn.Module):
         smooth2dloss = self.smooth2dloss(joint_2d_non_homo, gt_2d_hm_row, target_weight=joints_vis_3d)
 
         #  --- do triangulation on multiple settings ---------------------------------------------------
+
+        '''
         # no fusion
         j3d_nofusion = triangulation(j2d_nofusion_img, pmat, pts_mask=None)
 
@@ -217,6 +224,8 @@ class MultiViewPose(nn.Module):
         # heuristic fusion
         j3d_heuristic_fuse = triangulation(joint_heuristic_image, pmat, pts_mask=None)
 
+        '''
+
         # weighted fusion
         mask_tmp = j2d_nofusion_maxv.view(batch, nview, njoints).permute(0,2,1).contiguous()
         mask_tmp2 = (mask_tmp > 0.01).type_as(mask_tmp)
@@ -228,18 +237,18 @@ class MultiViewPose(nn.Module):
         out_extra['fused_hms_smax'] = j2d_fused_smax_out
         out_extra['joint_2d_loss'] = smooth2dloss
         out_extra['pred_view_weight'] = view_weight
-        out_extra['maxv'] = maxv_weight_fuse  # (batch, njoints, nview)
+        # out_extra['maxv'] = maxv_weight_fuse  # (batch, njoints, nview)
         out_extra['nviews_vis'] = nviews_vis  # how many views are seen of grouping for each joint, obtained from gt
-        out_extra['j3d_NoFuse'] = j3d_nofusion  # nofusion no weight, just triangulation
-        out_extra['j3d_HeuristicFuse'] = j3d_heuristic_fuse  # crossview fusion with heuristic weight
-        out_extra['j3d_ScoreFuse'] = j3d_maxv_fused
+        # out_extra['j3d_NoFuse'] = j3d_nofusion  # nofusion no weight, just triangulation
+        # out_extra['j3d_HeuristicFuse'] = j3d_heuristic_fuse  # crossview fusion with heuristic weight
+        # out_extra['j3d_ScoreFuse'] = j3d_maxv_fused
         if do_ransac:
             out_extra['j3d_ransac'] = j3d_ransac
         out_extra['j3d_AdaFuse'] = j3d_ada_fused
 
         out_extra['j2d_NoFuse'] = j2d_nofusion_img
-        out_extra['j2d_HeuristicFuse'] = joint_heuristic_image
-        out_extra['j2d_ScoreFuse'] = j2d_maxv_fused_image
+        # out_extra['j2d_HeuristicFuse'] = joint_heuristic_image
+        # out_extra['j2d_ScoreFuse'] = j2d_maxv_fused_image
         out_extra['j2d_AdaFuse'] = j2d_fused_image
 
         return hms_out, out_extra
