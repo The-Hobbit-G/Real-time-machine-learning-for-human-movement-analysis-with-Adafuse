@@ -111,6 +111,8 @@ def run_model(
     else:
         phase = 'test'
         model.eval()
+    ####to calculate average speed
+    speed_list = []
     with dummy_context_mgr() if is_train else torch.no_grad():
         # if eval then use no_grad context manager
         end = time.time()
@@ -268,10 +270,14 @@ def run_model(
             batch_time.update(time.time() - end)
             end = time.time()
 
+            
             # ---- print logs
             if i % config.PRINT_FREQ == 0 or i == len(loader)-1 or debug_bit:
                 gpu_memory_usage = torch.cuda.max_memory_allocated(0)  # bytes
                 gpu_memory_usage_gb = gpu_memory_usage / 1.074e9
+                ###
+                speed_list.append(input.shape[0] / batch_time.val)
+                ###
                 mpjpe_log_string = ''
                 for k in mpjpe_meters:
                     mpjpe_log_string += '{:.1f}|'.format(mpjpe_meters[k].avg)
@@ -300,6 +306,7 @@ def run_model(
                 #                   pre * 4, output, prefix, suffix='fuse')
                 save_debug_images_2(config, input, meta_for_debug_imgs, target,
                                     pre * 0, fused_hms_smax, prefix, suffix='smax', normalize=True, IMG=False)
+            
 
             if is_train:
                 pass
@@ -315,6 +322,8 @@ def run_model(
                 if do_save_heatmaps:
                     all_heatmaps[idx_sample:idx_sample + nimgs] = output.cpu().numpy()
                 idx_sample += nimgs
+        ###to calculate average speed
+        logger.info('Average Speed: {} samples/s ({} fps)'.format(sum(speed_list)/len(speed_list),sum(speed_list)/(input.shape[0]*len(speed_list))))
         # -- End epoch
 
         if is_train:
